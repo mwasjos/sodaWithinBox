@@ -16,7 +16,7 @@ $( document ).ready(function() {
 	//define a base icon
   var baseIcon = L.Icon.extend({
     options:{
-	    shadowUrl: '../img/shadow.png',
+	    shadowUrl: '/img/shadow.png',
 
 	    iconSize:     [32, 37], // size of the icon
 	    shadowSize:   [51, 37], // size of the shadow
@@ -27,19 +27,19 @@ $( document ).ready(function() {
 	});
 
   //define agency icons based on the base icon
-	var tlcIcon = new baseIcon({iconUrl: '../img/taxi.png'});
-	var dotIcon = new baseIcon({iconUrl: '../img/dot.png'});
-	var parksIcon = new baseIcon({iconUrl: '../img/parks.png'});
-	var buildingsIcon = new baseIcon({iconUrl: '../img/buildings.png'});
-	var nypdIcon = new baseIcon({iconUrl: '../img/nypd.png'});
-	var dsnyIcon = new baseIcon({iconUrl: '../img/dsny.png'});
-	var fdnyIcon = new baseIcon({iconUrl: '../img/fdny.png'});
-	var doeIcon = new baseIcon({iconUrl: '../img/doe.png'});
-	var depIcon = new baseIcon({iconUrl: '../img/dep.png'});
-	var dofIcon = new baseIcon({iconUrl: '../img/dof.png'});
-	var dcaIcon = new baseIcon({iconUrl: '../img/dca.png'});
-	var dohmhIcon = new baseIcon({iconUrl: '../img/dohmh.png'});
-	var hpdIcon = new baseIcon({iconUrl: '../img/hpd.png'});
+	var tlcIcon = new baseIcon({iconUrl: '/img/taxi.png'});
+	var dotIcon = new baseIcon({iconUrl: '/img/dot.png'});
+	var parksIcon = new baseIcon({iconUrl: '/img/parks.png'});
+	var buildingsIcon = new baseIcon({iconUrl: '/img/buildings.png'});
+	var nypdIcon = new baseIcon({iconUrl: '/img/nypd.png'});
+	var dsnyIcon = new baseIcon({iconUrl: '/img/dsny.png'});
+	var fdnyIcon = new baseIcon({iconUrl: '/img/fdny.png'});
+	var doeIcon = new baseIcon({iconUrl: '/img/doe.png'});
+	var depIcon = new baseIcon({iconUrl: '/img/dep.png'});
+	var dofIcon = new baseIcon({iconUrl: '/img/dof.png'});
+	var dcaIcon = new baseIcon({iconUrl: '/img/dca.png'});
+	var dohmhIcon = new baseIcon({iconUrl: '/img/dohmh.png'});
+	var hpdIcon = new baseIcon({iconUrl: '/img/hpd.png'});
 
 
   function getData() {
