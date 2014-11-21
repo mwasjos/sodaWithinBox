@@ -9,16 +9,17 @@
 </head>
 <body>
 
-  <div id="map"></div> 
+  <div id="map"></div>
+  <div id="infoBox">
 
-  	<h2>Enter an Address and press Enter</h2>
-  	<input type="text" id="addressSearch">
+    <div id="infoBoxTitle">311 Requests Since <span id = 'startDate'></span>
+    </div>
+  </div>
+  <div id="getData">
+    <a href = "https://nycopendata.socrata.com/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9"><img src = "https://raw.githubusercontent.com/betanyc/getDataButton/master/png/110x32.png"></a>
   </div>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
-  <script src="js/l.control.geosearch.js"></script>
-  <script src="js/l.geosearch.provider.google.js"></script>
-  
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>  
   <script src="js/script.js"></script> 
 </body>
 </html>

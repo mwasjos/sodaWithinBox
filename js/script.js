@@ -8,7 +8,9 @@ $( document ).ready(function() {
 	.setView([40.705008,-73.995581], 15);
 
 	//add an OSM tileset as the base layer
-	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+	L.tileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png',{
+		attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+	}).addTo(map);
 
 	//call our getData() function.
 	getData();
@@ -53,6 +55,8 @@ $( document ).ready(function() {
 		var sevenDaysAgo = new Date();
 		sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
 
+		$('#startDate').html(sevenDaysAgo.toDateString());
+
 		function cleanDate(input) {
 			return (input < 10) ? '0' + input : input ;
 		}
@@ -82,7 +86,7 @@ $( document ).ready(function() {
 						.bindPopup(
 							'<h4>' + marker.complaint_type + '</h4>'
 							+ (new Date(marker.created_date)).toDateString()
-							+ ((marker.incident_address == 'undefined') ? '<br/>' + marker.incident_address : '' )
+							+ ((marker.incident_address != null) ? '<br/>' + marker.incident_address : '' )
 						)
 						.addTo(map);
 				}
