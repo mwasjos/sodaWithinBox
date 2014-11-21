@@ -18,11 +18,23 @@ html,body {
 #infoBox {
 	position: absolute;
 	top: 30px;
-	background: #444;
 	left: 0;
 	padding: 20px;
 	font-size: 24px;
-	box-shadow: 4px 4px 3px #fff;
+
+}
+
+#blurbBox {
+	position: absolute;
+	top: 116px;
+	width: 285px;
+	padding: 0 21px;
+	font-size: 14px;
+}
+
+.box {
+	box-shadow: 2px 2px 0px #949494;
+	background: #444;
 }
 
 #getData {
@@ -35,3 +47,7 @@ html,body {
 h4 {
 	margin-bottom: 2px;
 }
+
+a,a:visited {
+	color:#CBC2DD;
+};
