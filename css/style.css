@@ -21,16 +21,29 @@ html,body {
 	left: 0;
 	padding: 20px;
 	font-size: 24px;
+}
 
+#infoBoxTitle
+{
+    
 }
 
 #blurbBox {
 	position: absolute;
-	top: 116px;
+	bottom: 56px;
 	width: 285px;
 	padding: 0 21px;
 	font-size: 14px;
 }
+
+#FilterBox {
+	position: absolute;
+	top: 116px;    
+	width: 300px;
+	padding: 0 10px;
+	font-size: 14px;
+}
+
 
 .box {
 	box-shadow: 2px 2px 0px #949494;
@@ -50,4 +63,4 @@ h4 {
 
 a,a:visited {
 	color:#CBC2DD;
-};
+}
