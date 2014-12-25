@@ -1,11 +1,13 @@
 $(document).ready(function () {
-
+    var sevenDaysAgo;
     //initialize the leaflet map, set options and view
     var map = L.map('map', {
         zoomControl: false,
         scrollWheelZoom: false
     })
 	.setView([40.705008, -73.995581], 15);
+
+    var markers = new L.FeatureGroup();
 
     //add an OSM tileset as the base layer
     L.tileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
@@ -47,7 +49,8 @@ $(document).ready(function () {
     function getData() {
         //get map bounds from Leaflet
         var bbox = map.getBounds();
-
+        //map.removeLayer(markers);
+        markers.clearLayers();
         //create a SODA-ready bounding box that looks like: topLeftLat,topLeftLon,bottomRightLat,bottomRightLon
         var sodaQueryBox = [bbox._northEast.lat, bbox._southWest.lng, bbox._southWest.lat, bbox._northEast.lng];
 
@@ -70,11 +73,7 @@ $(document).ready(function () {
 
         //use jQuery's getJSON() to call the SODA API for NYC 311
         //concatenate sodaQueryBox and sevenDaysAgo to add a $where clause to the SODA endpoint
-        $.getJSON("https://data.cityofnewyork.us/resource/erm2-nwe9.json?$select=location,closed_date,complaint_type,street_name,created_date,status,unique_key,agency_name,due_date,descriptor,location_type,agency,incident_address&$where=created_date>'"
-			+ sevenDaysAgo
-			+ "' AND within_box(location,"
-			+ sodaQueryBox
-			+ ")&$order=created_date desc", function (data) {
+        $.getJSON(constructQuery(sevenDaysAgo, sodaQueryBox), function (data) {
 
 			    //iterate over each 311 complaint, add a marker to the map
 			    for (var i = 0; i < data.length; i++) {
@@ -82,19 +81,37 @@ $(document).ready(function () {
 			        var marker = data[i];
 			        var icon = getIcon(marker);
 
-			        L.marker([marker.location.latitude, marker.location.longitude], { icon: icon })
-						.bindPopup(
+			        var markerItem = L.marker([marker.location.latitude, marker.location.longitude], { icon: icon });
+			        markerItem.bindPopup(
 							'<h4>' + marker.complaint_type + '</h4>'
 							+ (new Date(marker.created_date)).toDateString()
 							+ ((marker.incident_address != null) ? '<br/>' + marker.incident_address : '')
-						)
-						.addTo(map);
+						);
+			        markers.addLayer(markerItem);
 			    }
-
+            //.addTo(map);
+			    map.addLayer(markers);
 
 			})
     }
 
+    function constructQuery(sevenDaysAgo, sodaQueryBox) {
+        var originalstr = "https://data.cityofnewyork.us/resource/erm2-nwe9.json?$select=location,closed_date,complaint_type,street_name,created_date,status,unique_key,agency_name,due_date,descriptor,location_type,agency,incident_address&$where=created_date>'"
+			+ sevenDaysAgo
+			+ "' AND within_box(location,"
+			+ sodaQueryBox
+			+ ")&$order=created_date desc"
+
+        var agency = $( "#nycAgency" ).val();
+        var conditiion = $("#conditions_list").val();
+        if (agency.length != 0 && agency != "All") {
+            originalstr = originalstr + "&agency=" + agency;
+        }
+        if (conditiion.length != 0 && conditiion != "All") {
+            originalstr = originalstr + "&complaint_type=" + conditiion;
+        }
+        return originalstr;
+    }
     function getIcon(thisMarker) {
 
         switch (thisMarker.agency) {
@@ -130,6 +147,14 @@ $(document).ready(function () {
     }
 
     map.on('dragend', function (e) {
+        getData();
+    });
+
+    $('#nycAgency').on("change", function () {
+        getData();
+    });
+
+    $("#conditions_list").on('change keyup paste', function () {
         getData();
     });
 });

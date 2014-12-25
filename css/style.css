@@ -23,11 +23,6 @@ html,body {
 	font-size: 24px;
 }
 
-#infoBoxTitle
-{
-    
-}
-
 #blurbBox {
 	position: absolute;
 	bottom: 56px;
@@ -40,7 +35,7 @@ html,body {
 	position: absolute;
 	top: 116px;    
 	width: 300px;
-	padding: 0 10px;
+	padding: 10px 10px 10px 10px;
 	font-size: 14px;
 }
 
