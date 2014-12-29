@@ -37,12 +37,14 @@ html,body {
 	width: 300px;
 	padding: 10px 10px 10px 10px;
 	font-size: 14px;
+
 }
 
 
 .box {
 	box-shadow: 2px 2px 0px #949494;
 	background: #444;
+    opacity: 0.8;
 }
 
 #getData {
