@@ -68,7 +68,7 @@ $(document).ready(function () {
         //create a SODA-ready date string that looks like: 2014-11-01
         sevenDaysAgo = sevenDaysAgo.getFullYear()
 			+ '-'
-			+ (sevenDaysAgo.getMonth() + 1)
+			+ cleanDate((sevenDaysAgo.getMonth() + 1))
 			+ '-'
 			+ cleanDate((sevenDaysAgo.getDate() + 1));
 
@@ -76,6 +76,7 @@ $(document).ready(function () {
         //concatenate sodaQueryBox and sevenDaysAgo to add a $where clause to the SODA endpoint
         $.getJSON(constructQuery(sevenDaysAgo, sodaQueryBox), function (data) {
 
+                console.log(data)
 			    //iterate over each 311 complaint, add a marker to the map
 			    for (var i = 0; i < data.length; i++) {
 
@@ -111,6 +112,9 @@ $(document).ready(function () {
         if (conditiion.length != 0 && conditiion != "All") {
             originalstr = originalstr + "&complaint_type=" + conditiion;
         }
+
+        console.log(originalstr);
+
         return originalstr;
     }
     function getIcon(thisMarker) {
