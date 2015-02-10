@@ -40,6 +40,17 @@ html,body {
 
 }
 
+#spinnerBox {
+	width: 125px;
+	height: 125px;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin: -100px 0 0 -150px;
+	text-align: center;
+	box-sizing: border-box;
+	display:none;
+}
 
 .box {
 	box-shadow: 2px 2px 0px #949494;

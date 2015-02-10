@@ -1,165 +1,106 @@
+// This example shows how to use the bounding box of a leaflet view to create a
+// SODA within_box query, pulling data for the current map view from a Socrata dataset
 
-$(document).ready(function () {
-    var sevenDaysAgo;
-    //initialize the leaflet map, set options and view
-    var map = L.map('map', {
-        zoomControl: false,
-        scrollWheelZoom: false
+  //initialize the leaflet map, set options, view, and basemap
+  var map = L.map('map', {
+      zoomControl: false,
+      scrollWheelZoom: false
     })
-	.setView([40.705008, -73.995581], 15);
+    .setView([40.705008, -73.995581], 15);
 
-    var markers = new L.FeatureGroup();
-
-    //add an OSM tileset as the base layer
-    L.tileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
-        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+  L.tileLayer(
+    'http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {
+      minZoom: 0,
+      maxZoom: 19,
+      attribution: 'Imagery from <a href="http://giscience.uni-hd.de/">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    //call our getData() function.
+  var markers = new L.FeatureGroup();
+
+  //figure out what the date was 7 days ago
+  var sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  //show the "since" date in the title box
+  $('#startDate').html(sevenDaysAgo.toDateString());
+
+  //create a SODA-ready date string for 7 days ago that looks like: YYYY-mm-dd
+  sevenDaysAgo = sevenDaysAgo.getFullYear() + '-' 
+    + cleanDate((sevenDaysAgo.getMonth() + 1)) + '-' 
+    + cleanDate((sevenDaysAgo.getDate() + 1));
+
+  //call getData() and show spinner when the map is dragged
+  map.on('dragend', function(e) {
+    $('#spinnerBox').fadeIn();
     getData();
+  });
 
-    //define a base icon
-    var baseIcon = L.Icon.extend({
-        options: {
-            shadowUrl: 'img/shadow.png',
+  //call getData() once
+  getData();
 
-            iconSize: [32, 37], // size of the icon
-            shadowSize: [51, 37], // size of the shadow
-            iconAnchor: [16, 37], // point of the icon which will correspond to marker's location
-            shadowAnchor: [25, 37],  // the same for the shadow
-            popupAnchor: [1, -37] // point from which the popup should open relative to the iconAnchor
-        }
-    });
+  function getData() {
+    //clear markers before getting new ones
+    markers.clearLayers();
 
-    //define agency icons based on the base icon
-    var tlcIcon = new baseIcon({ iconUrl: 'img/taxi.png' });
-    var dotIcon = new baseIcon({ iconUrl: 'img/dot.png' });
-    var parksIcon = new baseIcon({ iconUrl: 'img/parks.png' });
-    var buildingsIcon = new baseIcon({ iconUrl: 'img/buildings.png' });
-    var nypdIcon = new baseIcon({ iconUrl: 'img/nypd.png' });
-    var dsnyIcon = new baseIcon({ iconUrl: 'img/dsny.png' });
-    var fdnyIcon = new baseIcon({ iconUrl: 'img/fdny.png' });
-    var doeIcon = new baseIcon({ iconUrl: 'img/doe.png' });
-    var depIcon = new baseIcon({ iconUrl: 'img/dep.png' });
-    var dofIcon = new baseIcon({ iconUrl: 'img/dof.png' });
-    var dcaIcon = new baseIcon({ iconUrl: 'img/dca.png' });
-    var dohmhIcon = new baseIcon({ iconUrl: 'img/dohmh.png' });
-    var hpdIcon = new baseIcon({ iconUrl: 'img/hpd.png' });
+    //get map bounds from Leaflet.  getBounds() returns an object
+    var bbox = map.getBounds();
+    console.log(bbox);
+
+    //within_box() expects a bounding box that looks like: topLeftLat,topLeftLon,bottomRightLat,bottomRightLon, so we need to reorder the coordinates leaflet returned
+    var sodaQueryBox = [
+      bbox._northEast.lat, 
+      bbox._southWest.lng, 
+      bbox._southWest.lat, 
+      bbox._northEast.lng
+    ];
+
+    //use jQuery's getJSON() to call the SODA API for NYC 311
+    $.getJSON(buildQuery(sevenDaysAgo, sodaQueryBox), function(data) {
+
+      //iterate over each 311 complaint, add a marker to the map
+      for (var i = 0; i < data.length; i++) {
+
+        var marker = data[i];
+        var markerItem = L.circleMarker(
+          [marker.location.latitude,marker.location.longitude], {
+            radius: 5,
+            fillColor: "steelblue",
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8,
+          });
+
+        markerItem.bindPopup(
+          '<h4>' + marker.complaint_type + '</h4>' 
+          + (new Date(marker.created_date)).toDateString() 
+          + ((marker.incident_address != null) ? '<br/>' + marker.incident_address : '')
+        );
+
+        markers.addLayer(markerItem);
+      }
+      //.addTo(map);
+      map.addLayer(markers);
+
+      //fade out the loading spinner
+      $('#spinnerBox').fadeOut();
+    })
+  }
+
+  //assemble a valid SODA API call using within_box() and created_date>{a week ago}
+  function buildQuery(sevenDaysAgo, sodaQueryBox) {
+    var query =
+      "https://data.cityofnewyork.us/resource/erm2-nwe9.json?$select=location,closed_date,complaint_type,street_name,created_date,status,unique_key,agency_name,due_date,descriptor,location_type,agency,incident_address&$where=created_date>'" +
+      sevenDaysAgo + "' AND within_box(location," + sodaQueryBox +
+      ")&$order=created_date desc";
+
+    console.log(query);
+    return query;
+  }
+
+  //add leading zero if month or day is less than 10
+  function cleanDate(input) {
+    return (input < 10) ? '0' + input : input;
+  }
 
 
-    function getData() {
-        //get map bounds from Leaflet
-        var bbox = map.getBounds();
-        //map.removeLayer(markers);
-        markers.clearLayers();
-        //create a SODA-ready bounding box that looks like: topLeftLat,topLeftLon,bottomRightLat,bottomRightLon
-        var sodaQueryBox = [bbox._northEast.lat, bbox._southWest.lng, bbox._southWest.lat, bbox._northEast.lng];
-
-        //figure out what the date was 7 days ago
-        var sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-        $('#startDate').html(sevenDaysAgo.toDateString());
-
-        function cleanDate(input) {
-            return (input < 10) ? '0' + input : input;
-        }
-
-        //create a SODA-ready date string that looks like: 2014-11-01
-        sevenDaysAgo = sevenDaysAgo.getFullYear()
-			+ '-'
-			+ cleanDate((sevenDaysAgo.getMonth() + 1))
-			+ '-'
-			+ cleanDate((sevenDaysAgo.getDate() + 1));
-
-        //use jQuery's getJSON() to call the SODA API for NYC 311
-        //concatenate sodaQueryBox and sevenDaysAgo to add a $where clause to the SODA endpoint
-        $.getJSON(constructQuery(sevenDaysAgo, sodaQueryBox), function (data) {
-
-                console.log(data)
-			    //iterate over each 311 complaint, add a marker to the map
-			    for (var i = 0; i < data.length; i++) {
-
-			        var marker = data[i];
-			        var icon = getIcon(marker);
-
-			        var markerItem = L.marker([marker.location.latitude, marker.location.longitude], { icon: icon });
-			        markerItem.bindPopup(
-							'<h4>' + marker.complaint_type + '</h4>'
-							+ (new Date(marker.created_date)).toDateString()
-							+ ((marker.incident_address != null) ? '<br/>' + marker.incident_address : '')
-						);
-			        markers.addLayer(markerItem);
-			    }
-            //.addTo(map);
-			    map.addLayer(markers);
-
-			})
-    }
-
-    function constructQuery(sevenDaysAgo, sodaQueryBox) {
-        var originalstr = "https://data.cityofnewyork.us/resource/erm2-nwe9.json?$select=location,closed_date,complaint_type,street_name,created_date,status,unique_key,agency_name,due_date,descriptor,location_type,agency,incident_address&$where=created_date>'"
-			+ sevenDaysAgo
-			+ "' AND within_box(location,"
-			+ sodaQueryBox
-			+ ")&$order=created_date desc"
-
-        var agency = $( "#nycAgency" ).val();
-        var conditiion = $("#conditions_list").val();
-        if (agency.length != 0 && agency != "All") {
-            originalstr = originalstr + "&agency=" + agency;
-        }
-        if (conditiion.length != 0 && conditiion != "All") {
-            originalstr = originalstr + "&complaint_type=" + conditiion;
-        }
-
-        console.log(originalstr);
-
-        return originalstr;
-    }
-    function getIcon(thisMarker) {
-
-        switch (thisMarker.agency) {
-            case 'TLC':
-                return tlcIcon;
-            case 'DOT':
-                return dotIcon;
-            case 'DPR':
-                return parksIcon;
-            case 'DOB':
-                return buildingsIcon;
-            case 'NYPD':
-                return nypdIcon;
-            case 'DSNY':
-                return dsnyIcon;
-            case 'FDNY':
-                return fdnyIcon;
-            case 'DOE':
-                return doeIcon;
-            case 'DEP':
-                return depIcon;
-            case 'DOF':
-                return dofIcon;
-            case 'DCA':
-                return dcaIcon;
-            case 'DOHMH':
-                return dohmhIcon;
-            case 'HPD':
-                return hpdIcon;
-            default:
-                return new L.Icon.Default();
-        }
-    }
-
-    map.on('dragend', function (e) {
-        getData();
-    });
-
-    $('#nycAgency').on("change", function () {
-        getData();
-    });
-
-    $("#conditions_list").on('change keyup paste', function () {
-        getData();
-    });
-});
